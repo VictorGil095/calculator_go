@@ -3,8 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/VictorGil095/calculator-go/lib"
 	"os"
+
+	"github.com/VictorGil095/calculator_go/tree/main/lib"
 )
 
 func formatFloat(num float64) string {
