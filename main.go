@@ -1,101 +1,80 @@
-go
 package main
 
 import (
- "bufio"
- "fmt"
- "os"
- "strconv"
- "strings"
+	"fmt"
+	"strconv"
+	"strings"
 )
 
+const op = "+-*/"
+
 func main() {
- reader := bufio.NewReader(os.Stdin)
-
- fmt.Print("Enter the expression: ")
- expression, _ := reader.ReadString('\n')
- expression = strings.TrimSpace(expression)
-
- result, err := calculate(expression)
- if err != nil {
-  fmt.Println(err)
-  return
- }
-
- fmt.Println("Result:", result)
+	var x, a, y string
+	fmt.Scan(&x, &a, &y)
+	fmt.Println(result(x, a, y))
 }
 
-func calculate(expression string) (string, error) {
- tokens := strings.Split(expression, " ")
- if len(tokens) != 3 {
-  return "", fmt.Errorf("Invalid expression")
- }
-
- a, err := parseNumber(tokens[0])
- if err != nil {
-  return "", err
- }
-
- operator := tokens[1]
-
- b, err := parseNumber(tokens[2])
- if err != nil {
-  return "", err
- }
-
- var result int
- switch operator {
- case "+":
-  result = a + b
- case "-":
-  result = a - b
- case "*":
-  result = a * b
- case "/":
-  if b == 0 {
-   return "", fmt.Errorf("Division by zero")
-  }
-  result = a / b
- default:
-  return "", fmt.Errorf("Invalid operator")
- }
-
- return formatResult(result), nil
+func result(x, a, y string) string {
+	parsSign(a)
+	first, err1 := strconv.Atoi(x)
+	second, err2 := strconv.Atoi(y)
+	if err1 == nil && err2 == nil {
+		return strconv.Itoa(parsNumber(first, second, a))
+	} else {
+		return parsRome(x, a, y)
+	}
 }
 
-func parseNumber(str string) (int, error) {
- num, err := strconv.Atoi(str)
- if err == nil {
-  if num < 1 || num > 10 {
-   return 0, fmt.Errorf("Number out of range")
-  }
-  return num, nil
- }
-
- romanNumeral := strings.ToUpper(str)
- if !isValidRomanNumeral(romanNumeral) {
-  return 0, fmt.Errorf("Invalid Roman numeral")
- }
-
- return convertRomanToArabic(romanNumeral), nil
+func parsSign(a string) string {
+	if strings.ContainsAny(a, op) {
+		return a
+	}
+	panic("На вход поступил неверный арифметический знак")
 }
 
-func isValidRomanNumeral(romanNumeral string) bool {
- return true
+func parsNumber(x, y int, a string) int {
+	var res int
+	if x < 11 && y < 11 && x > 0 && y > 0 {
+		switch a {
+		case "+":
+			res = x + y
+		case "-":
+			res = x - y
+		case "*":
+			res = x * y
+		case "/":
+			res = x / y
+		}
+		return res
+	} else {
+		panic("Нужны только арбские либо только рисмские числа не больше 10 и не меньше 1")
+	}
+
 }
 
-func convertRomanToArabic(romanNumeral string) int {
- return 0
-}
-
-func formatResult(result int) string {
- if result < 0 {
-  return strconv.Itoa(result)
- }
-
- return convertArabicToRoman(result)
-}
-
-func convertArabicToRoman(number int) string {
- return ""
+func parsRome(x, a, y string) string {
+	numRome := map[string]int{
+		"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5,
+		"VI": 6, "VII": 7, "VIII": 8, "IX": 9, "X": 10,
+	}
+	firstRome, ok1 := numRome[x]
+	secondRome, ok2 := numRome[y]
+	if ok1 && ok2 {
+		num := parsNumber(firstRome, secondRome, a)
+		if num < 0 {
+			panic("В римской системе нет отрицательных чисел.")
+		}
+		symbols := []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
+		values := []int{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}
+		var result strings.Builder
+		for i := 0; i < len(symbols); i++ {
+			for num >= values[i] {
+				result.WriteString(symbols[i])
+				num -= values[i]
+			}
+		}
+		return result.String()
+	} else {
+		panic("Нужны только арбские либо только рисмские числа не больше 10")
+	}
 }
